@@ -1,0 +1,4 @@
+{"id": 1, "name": "見込み", "order_no": 1, "is_active": true}
+{"id": 2, "name": "提案", "order_no": 2, "is_active": true}
+{"id": 3, "name": "クロージング", "order_no": 3, "is_active": true}
+{"id": 4, "name": "受注", "order_no": 4, "is_active": true}

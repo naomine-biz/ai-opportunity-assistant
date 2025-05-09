@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
+from api.api import api_router
 from core.config import settings
 from core.logger import get_app_logger
 from db.session import create_db_and_tables
@@ -34,6 +35,10 @@ def shutdown_event() -> None:
 def read_root() -> dict:
     """ルートエンドポイント"""
     return {"message": "AI Opportunity Assistant API"}
+
+
+# APIルーターを登録
+app.include_router(api_router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

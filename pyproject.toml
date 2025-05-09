@@ -5,10 +5,15 @@ description = "営業オポチュニティマネジメント AIアシスタン�
 authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+lint = "scripts.lint:run_all_linters"
+check-deps = "scripts.check_dependencies:main"
+
 [tool.poetry.dependencies]
 python = "^3.9"
 fastapi = "0.95.0"
 uvicorn = "0.21.1"
+httpx = "0.24.0"
 sqlmodel = "0.0.8"
 psycopg2-binary = "2.9.6"
 slack-sdk = "3.20.2"
@@ -18,9 +23,12 @@ openai = "0.27.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "7.3.1"
+pytest-asyncio = "0.21.0"
+pytest-mock = "3.10.0"
 black = "23.3.0"
 isort = "5.12.0"
 flake8 = "6.0.0"
+import-linter = "^2.3"
 
 [build-system]
 requires = ["poetry-core"]

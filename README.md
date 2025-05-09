@@ -76,4 +76,43 @@ poetry run pytest
 poetry run black src tests
 poetry run isort src tests
 poetry run flake8 src tests
+poetry run python -m scripts.check_dependencies
 ```
+
+### プルリクエスト作成ルール
+
+プルリクエストを作成する際は、以下のルールに従ってください：
+
+1. **ブランチ命名規則**
+   - 機能追加: `feature/機能名`
+   - バグ修正: `fix/バグ内容`
+   - リファクタリング: `refactor/内容`
+   - ドキュメント: `docs/内容`
+
+2. **コード品質**
+   - PRを作成する前に必ず以下のコマンドを実行し、コードフォーマットとリントを行う
+     ```bash
+     poetry run black src tests
+     poetry run isort src tests
+     poetry run flake8 src tests
+     poetry run python -m scripts.check_dependencies
+     ```
+   - 不要なimportや使われていない変数は削除する
+   - すべてのテストが通過していることを確認する
+
+3. **依存関係ルール**
+   - モジュール間の依存関係ルールを守ること
+   - apiからslackへの直接依存など、禁止されている依存関係を作らない
+   - 疑わしい場合は`poetry run python -m scripts.check_dependencies`で検証する
+
+4. **PR説明**
+   - 概要: 変更の概要を簡潔に記述
+   - 背景: なぜこの変更が必要か
+   - 変更内容: 主な変更点をリストアップ
+   - テスト: どのようにテストしたか
+
+5. **レビュー前チェックリスト**
+   - [ ] コードフォーマット・リントを適用済み
+   - [ ] テストがすべて通過
+   - [ ] 依存関係ルールを遵守
+   - [ ] ドキュメントを更新（必要な場合）

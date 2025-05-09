@@ -1,9 +1,10 @@
 """
 Slack Event APIテスト
 """
+
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -15,7 +16,6 @@ sys.path.insert(0, str(SRC_DIR))
 # flake8の警告を抑制：インポート順序の問題
 # isort: skip_file
 from api.routes.slack_routes import verify_slack_signature  # noqa: E402
-from services.slack_service import process_slack_event  # noqa: E402
 
 
 def test_slack_verification_challenge(client):
@@ -27,10 +27,7 @@ def test_slack_verification_challenge(client):
     }
 
     # 検証リクエスト送信
-    response = client.post(
-        "/api/v1/slack/events",
-        json=challenge_data
-    )
+    response = client.post("/api/v1/slack/events", json=challenge_data)
 
     # レスポンスを検証
     assert response.status_code == 200
@@ -48,8 +45,8 @@ def test_slack_message_event(client):
             "user": "U123USER",
             "text": "A社に訪問しました。",
             "channel": "D123CHANNEL",
-            "ts": "1609459200.000100"
-        }
+            "ts": "1609459200.000100",
+        },
     }
 
     # 非同期メソッドのモック作成
@@ -59,10 +56,7 @@ def test_slack_message_event(client):
     # サービスレイヤーのイベント処理をモック
     with patch("services.slack_service.process_slack_event", mock_process_event):
         # リクエスト送信
-        response = client.post(
-            "/api/v1/slack/events",
-            json=message_data
-        )
+        response = client.post("/api/v1/slack/events", json=message_data)
 
         # レスポンスを検証（非同期処理なので202を返す）
         assert response.status_code == 202
@@ -76,24 +70,37 @@ async def test_slack_signature_verification():
     """Slack署名検証が正しく動作することを確認"""
     # モックリクエスト作成
     mock_request = MagicMock()
+
     # asyncメソッドとして正しくモック化
     async def mock_body():
         return b'{"foo": "bar"}'
+
     mock_request.body = mock_body
     mock_request.headers.get.side_effect = lambda x: {
         "X-Slack-Signature": "test_signature",
-        "X-Slack-Request-Timestamp": "1609459200"
+        "X-Slack-Request-Timestamp": "1609459200",
     }.get(x)
 
     # 署名検証が成功するケース
-    with patch("api.routes.slack_routes.signature_verifier.is_valid", return_value=True), \
-         patch("src.api.routes.slack_routes.signature_verifier.is_valid", return_value=True):
+    with (
+        patch("api.routes.slack_routes.signature_verifier.is_valid", return_value=True),
+        patch(
+            "src.api.routes.slack_routes.signature_verifier.is_valid", return_value=True
+        ),
+    ):
         # 例外が発生しないことを確認
         await verify_slack_signature(mock_request)
 
     # 署名検証が失敗するケース
-    with patch("api.routes.slack_routes.signature_verifier.is_valid", return_value=False), \
-         patch("src.api.routes.slack_routes.signature_verifier.is_valid", return_value=False):
+    with (
+        patch(
+            "api.routes.slack_routes.signature_verifier.is_valid", return_value=False
+        ),
+        patch(
+            "src.api.routes.slack_routes.signature_verifier.is_valid",
+            return_value=False,
+        ),
+    ):
         # HTTPException(403)が発生することを確認
         with pytest.raises(HTTPException) as exc_info:
             await verify_slack_signature(mock_request)
@@ -111,8 +118,8 @@ def test_missing_user_or_text(client):
             "type": "message",
             "text": "テストメッセージ",
             "channel": "D123CHANNEL",
-            "ts": "1609459200.000100"
-        }
+            "ts": "1609459200.000100",
+        },
     }
 
     # 非同期メソッドのモック作成 - 処理されなかった場合はFalseを返す
@@ -122,10 +129,7 @@ def test_missing_user_or_text(client):
     # サービスレイヤーのイベント処理をモック
     with patch("services.slack_service.process_slack_event", mock_process_event):
         # リクエスト送信
-        response = client.post(
-            "/api/v1/slack/events",
-            json=message_data
-        )
+        response = client.post("/api/v1/slack/events", json=message_data)
 
         # 処理対象外として204を返す
         assert response.status_code == 204

@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Request, Response, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from slack_sdk.signature import SignatureVerifier
 
 from core.config import settings
 from core.logger import get_slack_logger
-from services.slack_service import handle_slack_verification_challenge, process_slack_event
+from services.slack_service import (
+    handle_slack_verification_challenge,
+    process_slack_event,
+)
 
 router = APIRouter()
 logger = get_slack_logger()
@@ -37,13 +40,11 @@ async def verify_slack_signature(request: Request):
 
     # 署名を検証
     if not signature_verifier.is_valid(
-        body=body,
-        timestamp=timestamp,
-        signature=signature
+        body=body, timestamp=timestamp, signature=signature
     ):
         logger.warning(
             "Invalid Slack signature",
-            extra={"signature": signature, "timestamp": timestamp}
+            extra={"signature": signature, "timestamp": timestamp},
         )
         raise HTTPException(status_code=403, detail="Invalid Slack signature")
 

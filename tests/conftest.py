@@ -1,6 +1,7 @@
 """
 テストフィクスチャ定義
 """
+
 import os
 import sys
 from pathlib import Path
@@ -27,9 +28,11 @@ mock_session = MagicMock()
 @pytest.fixture(autouse=True)
 def mock_db_session():
     """データベースセッションをモック"""
-    with patch("sqlmodel.create_engine", return_value=mock_engine), \
-         patch("db.session.engine", mock_engine), \
-         patch("db.session.create_db_and_tables") as mock_create:
+    with (
+        patch("sqlmodel.create_engine", return_value=mock_engine),
+        patch("db.session.engine", mock_engine),
+        patch("db.session.create_db_and_tables"),
+    ):
         yield mock_session
 
 
@@ -38,14 +41,14 @@ async def mock_verify_slack_signature():
     """署名検証をバイパスするための非同期モック関数"""
     return None
 
+
 @pytest.fixture(scope="function")
 def client(mock_verify_slack_signature):
     """テスト用クライアントを作成"""
     # 設定とセッション取得
-    from core.config import settings
+    from api.routes.slack_routes import verify_slack_signature
     from db.session import get_session
     from main import app
-    from api.routes.slack_routes import verify_slack_signature
 
     # テスト用セッションをDI
     def override_get_session():
@@ -72,4 +75,5 @@ def client(mock_verify_slack_signature):
 def mock_slack_settings_fixture():
     """Slack設定モック"""
     from core.config import settings
+
     return settings

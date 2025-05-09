@@ -9,6 +9,12 @@ api_router = APIRouter()
 api_router.include_router(slack_routes.router, prefix="/slack", tags=["slack"])
 
 # TODO: 他のルーターを追加する
-# api_router.include_router(opportunity_routes.router, prefix="/opportunity", tags=["opportunity"])
-# api_router.include_router(activity_routes.router, prefix="/activity_log", tags=["activity"])
-# api_router.include_router(notification_routes.router, prefix="/notify", tags=["notification"])
+# api_router.include_router(
+#     opportunity_routes.router, prefix="/opportunity", tags=["opportunity"]
+# )
+# api_router.include_router(
+#     activity_routes.router, prefix="/activity_log", tags=["activity"]
+# )
+# api_router.include_router(
+#     notification_routes.router, prefix="/notify", tags=["notification"]
+# )

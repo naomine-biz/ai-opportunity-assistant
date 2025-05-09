@@ -3,8 +3,6 @@
 このファイルはpytestが最初に読み込み、データベース接続と関連モジュールをモックします。
 """
 import os
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 # テスト環境変数を設定
@@ -25,9 +23,11 @@ mock_session_factory.return_value.__exit__.return_value = None
 # 必要なモックパッチを適用
 patch("sqlmodel.create_engine", return_value=mock_engine).start()
 
+
 # エンジン設定を確認
 def create_mock_db():
     pass
+
 
 # 実モジュールのインポートの前にパッチを適用
 patch("db.session.create_db_and_tables", create_mock_db).start()

@@ -1,12 +1,14 @@
 """
 Slackサービスモジュール - API層とSlack処理モジュールの橋渡し
 """
-from typing import Any, Dict, Optional
+
+from typing import Any, Dict
 
 from core.logger import get_slack_logger
 from slack.handlers import slack_event_handler
 
 logger = get_slack_logger()
+
 
 # イベントタイプ定数
 class EventType:
@@ -15,7 +17,9 @@ class EventType:
     MESSAGE = "message"
 
 
-async def handle_slack_verification_challenge(event_data: Dict[str, Any]) -> Dict[str, str]:
+async def handle_slack_verification_challenge(
+    event_data: Dict[str, Any],
+) -> Dict[str, str]:
     """
     Slack URL検証チャレンジを処理する
 
@@ -58,19 +62,15 @@ async def process_slack_event(event_data: Dict[str, Any]) -> bool:
             "Processing message through service layer",
             extra={
                 "user_id": user_id,
-                "channel": channel, 
+                "channel": channel,
                 "ts": ts,
-                "text_length": len(text) if text else 0
-            }
+                "text_length": len(text) if text else 0,
+            },
         )
 
         # Slackハンドラにイベント処理を委譲
         await slack_event_handler.process_message_event(
-            user_id=user_id,
-            text=text,
-            channel=channel,
-            ts=ts,
-            event_data=event_data
+            user_id=user_id, text=text, channel=channel, ts=ts, event_data=event_data
         )
         return True
 

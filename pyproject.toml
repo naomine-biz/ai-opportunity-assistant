@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.scripts]
 lint = "scripts.lint:run_all_linters"
-lint-imports = "scripts.lint:run_import_linter"
+check-deps = "scripts.check_dependencies:main"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -46,60 +46,3 @@ line_length = 88
 max-line-length = 88
 extend-ignore = "E203"
 exclude = [".git", "__pycache__", ".pytest_cache", "venv"]
-
-[tool.importlinter]
-root_package = "src"
-
-[[tool.importlinter.contracts]]
-name = "APIからSlack直依存禁止"
-type = "forbidden"
-source_modules = ["src.api"]
-forbidden_modules = ["src.slack"]
-
-[[tool.importlinter.contracts]]
-name = "APIからDB直依存禁止"
-type = "forbidden"
-source_modules = ["src.api"]
-forbidden_modules = ["src.db"]
-
-[[tool.importlinter.contracts]]
-name = "APIからAgents直依存禁止"
-type = "forbidden"
-source_modules = ["src.api"]
-forbidden_modules = ["src.agents"]
-
-[[tool.importlinter.contracts]]
-name = "APIからScheduler直依存禁止"
-type = "forbidden"
-source_modules = ["src.api"]
-forbidden_modules = ["src.scheduler"]
-
-[[tool.importlinter.contracts]]
-name = "SlackからServices, DB, Agents, Scheduler直依存禁止"
-type = "forbidden"
-source_modules = ["src.slack"]
-forbidden_modules = ["src.services", "src.db", "src.agents", "src.scheduler"]
-
-[[tool.importlinter.contracts]]
-name = "ServicesからAPI, Scheduler直依存禁止"
-type = "forbidden"
-source_modules = ["src.services"]
-forbidden_modules = ["src.api", "src.scheduler"]
-
-[[tool.importlinter.contracts]]
-name = "SchedulerからAPI, Slack, DB, Agents直依存禁止"
-type = "forbidden"
-source_modules = ["src.scheduler"]
-forbidden_modules = ["src.api", "src.slack", "src.db", "src.agents"]
-
-[[tool.importlinter.contracts]]
-name = "DBから他モジュール依存禁止"
-type = "forbidden"
-source_modules = ["src.db"]
-forbidden_modules = ["src.api", "src.services", "src.agents", "src.slack", "src.scheduler"]
-
-[[tool.importlinter.contracts]]
-name = "Agentsから他モジュール依存禁止"
-type = "forbidden"
-source_modules = ["src.agents"]
-forbidden_modules = ["src.api", "src.services", "src.db", "src.slack", "src.scheduler"]

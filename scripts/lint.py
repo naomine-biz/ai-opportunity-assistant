@@ -23,11 +23,6 @@ def run_command(command):
     return result.returncode
 
 
-def run_import_linter():
-    """依存関係チェッカーの実行"""
-    print("== Checking Import Dependencies ==")
-    returncode = run_command(["lint-imports"])
-    return returncode
 
 
 def run_flake8():
@@ -51,20 +46,30 @@ def run_isort_check():
     return returncode
 
 
+def run_dependency_check():
+    """依存関係チェックの実行"""
+    print("== Checking Dependency Rules ==")
+    from scripts.check_dependencies import main as check_deps
+    try:
+        check_deps()
+        return 0
+    except SystemExit as e:
+        return e.code
+
 def run_all_linters():
     """すべてのリンターを実行"""
     print("Running all linters...")
     results = []
-    
+
     results.append(run_flake8())
     results.append(run_black_check())
     results.append(run_isort_check())
-    results.append(run_import_linter())
-    
+    results.append(run_dependency_check())
+
     # エラーが1つでもあれば終了コード1を返す
     if any(result != 0 for result in results):
         sys.exit(1)
-        
+
     print("All linters passed!")
     sys.exit(0)
 

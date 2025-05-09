@@ -3,8 +3,7 @@ from slack_sdk.signature import SignatureVerifier
 
 from core.config import settings
 from core.logger import get_slack_logger
-from slack.handlers import slack_event_handler
-from slack.models import EventType
+from services.slack_service import handle_slack_verification_challenge, process_slack_event
 
 router = APIRouter()
 logger = get_slack_logger()
@@ -64,45 +63,22 @@ async def slack_events(request: Request):
     event_type = event_data.get("type")
 
     # URLの検証チャレンジに対応
-    if event_type == EventType.URL_VERIFICATION:
+    if event_type == "url_verification":
         logger.info("Received Slack URL verification challenge")
-        challenge = event_data.get("challenge")
-        return {"challenge": challenge}
+        return await handle_slack_verification_challenge(event_data)
 
     # イベントコールバックの処理
-    if event_type == EventType.EVENT_CALLBACK:
-        event = event_data.get("event", {})
-        inner_event_type = event.get("type")
+    if event_type == "event_callback":
+        # サービスレイヤーにイベント処理を委譲
+        processed = await process_slack_event(event_data)
 
-        # チャネルメッセージイベントの処理
-        if inner_event_type == EventType.MESSAGE:
-            user_id = event.get("user")
-            text = event.get("text")
-            channel = event.get("channel")
-            ts = event.get("ts")
+        # 処理されなかった場合は204
+        if not processed:
+            return Response(status_code=204)
 
-            if not user_id or not text:
-                logger.warning("Received message event without user or text")
-                return Response(status_code=204)  # 処理対象外
+        # 処理が完了した場合は202（非同期処理）
+        return Response(status_code=202)
 
-            logger.info(
-                "Received message from user",
-                extra={
-                    "user_id": user_id,
-                    "channel": channel,
-                    "ts": ts,
-                    "text_length": len(text) if text else 0
-                }
-            )
-
-            # バックグラウンドでメッセージ処理
-            await slack_event_handler.process_message_event(
-                user_id=user_id,
-                text=text,
-                channel=channel,
-                ts=ts,
-                event_data=event_data
-            )
-
-    # 202 Acceptedを返す（非同期処理を示す）
-    return Response(status_code=202)
+    # その他のイベントタイプ
+    logger.info(f"Unsupported Slack event type: {event_type}")
+    return Response(status_code=204)

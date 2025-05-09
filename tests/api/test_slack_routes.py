@@ -15,7 +15,7 @@ sys.path.insert(0, str(SRC_DIR))
 # flake8の警告を抑制：インポート順序の問題
 # isort: skip_file
 from api.routes.slack_routes import verify_slack_signature  # noqa: E402
-from slack.handlers import slack_event_handler  # noqa: E402
+from services.slack_service import process_slack_event  # noqa: E402
 
 
 def test_slack_verification_challenge(client):
@@ -53,11 +53,11 @@ def test_slack_message_event(client):
     }
 
     # 非同期メソッドのモック作成
-    async def mock_process_message(*args, **kwargs):
-        return None
+    async def mock_process_event(*args, **kwargs):
+        return True
 
-    # イベントハンドラをモック
-    with patch("slack.handlers.slack_event_handler.process_message_event", mock_process_message):
+    # サービスレイヤーのイベント処理をモック
+    with patch("services.slack_service.process_slack_event", mock_process_event):
         # リクエスト送信
         response = client.post(
             "/api/v1/slack/events",
@@ -115,11 +115,17 @@ def test_missing_user_or_text(client):
         }
     }
 
-    # リクエスト送信
-    response = client.post(
-        "/api/v1/slack/events",
-        json=message_data
-    )
+    # 非同期メソッドのモック作成 - 処理されなかった場合はFalseを返す
+    async def mock_process_event(*args, **kwargs):
+        return False
 
-    # 処理対象外として204を返す
-    assert response.status_code == 204
+    # サービスレイヤーのイベント処理をモック
+    with patch("services.slack_service.process_slack_event", mock_process_event):
+        # リクエスト送信
+        response = client.post(
+            "/api/v1/slack/events",
+            json=message_data
+        )
+
+        # 処理対象外として204を返す
+        assert response.status_code == 204

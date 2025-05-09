@@ -59,8 +59,23 @@
 
 ### 開発ワークフロー
 - **GitHub** でのソース管理
-- **GitHub Actions** による自動テスト
+- **GitHub Actions** による自動テスト・CI/CD
 - **Conventional Commit** 準拠のコミットメッセージ（推奨）
+
+### CI/CD構成
+- **CI**: GitHub Actions上でDocker環境を使用
+  - `docker-compose up --build`でアプリ・DB起動
+  - `pytest`, `black`, `flake8`をコンテナ内で実行
+  - `push`, `pull_request`時に実行
+
+- **CD**: GitHub Container Registry (ghcr.io)へのイメージPush
+  - `main`ブランチpushまたは`tag`push時に実行
+  - バージョンタグ付きイメージを生成
+  - デプロイ処理は外部プロセスで管理
+
+- **Docker構成**:
+  - `Dockerfile`: アプリ用ビルド定義
+  - `docker-compose.yml`: テスト実行用（app + postgres）
 
 ## 技術的制約
 

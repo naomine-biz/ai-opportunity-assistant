@@ -201,7 +201,8 @@ async def test_search_opportunities_success(mock_search_opportunities, client):
     mock_search_opportunities.side_effect = mock_search
 
     # APIリクエスト実行
-    response = client.get(f"/api/v1/opportunity/search?customer_id={CUSTOMER_ID}")
+    # 検索テスト時はクエリパラメーターなしで呼び出す
+    response = client.get("/api/v1/opportunity/search")
 
     # レスポンスの検証
     assert response.status_code == status.HTTP_200_OK

@@ -27,7 +27,7 @@ async def create_activity_log_endpoint(activity_data: ActivityLogCreate):
     """
     try:
         # Convert Pydantic model to dictionary
-        activity_dict = activity_data.model_dump()
+        activity_dict = activity_data.dict()
         new_activity_id = await create_activity_log(activity_dict)
 
         logger.info(

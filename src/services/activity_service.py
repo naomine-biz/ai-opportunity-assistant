@@ -45,13 +45,15 @@ async def create_activity_log(activity_data: dict, session: Session = None) -> U
             raise ValueError(f"Missing required field: {field}")
 
     # オポチュニティが存在するか確認
-    opportunity = session.get(Opportunity, activity_data["opportunity_id"])
+    opportunity_id = UUID(activity_data["opportunity_id"]) if isinstance(activity_data["opportunity_id"], str) else activity_data["opportunity_id"]
+    opportunity = session.get(Opportunity, opportunity_id)
     if not opportunity:
         logger.warning(f"Opportunity not found: {activity_data['opportunity_id']}")
         raise ValueError(f"Opportunity not found: {activity_data['opportunity_id']}")
 
     # ユーザーが存在するか確認
-    user = session.get(User, activity_data["user_id"])
+    user_id = UUID(activity_data["user_id"]) if isinstance(activity_data["user_id"], str) else activity_data["user_id"]
+    user = session.get(User, user_id)
     if not user:
         logger.warning(f"User not found: {activity_data['user_id']}")
         raise ValueError(f"User not found: {activity_data['user_id']}")
@@ -66,8 +68,8 @@ async def create_activity_log(activity_data: dict, session: Session = None) -> U
 
     # アクティビティログを作成
     new_activity = ActivityLog(
-        opportunity_id=activity_data["opportunity_id"],
-        user_id=activity_data["user_id"],
+        opportunity_id=opportunity_id,  # 既に変換済みの値を使用
+        user_id=user_id,  # 既に変換済みの値を使用
         activity_type_id=activity_data["activity_type_id"],
         action_date=date.fromisoformat(activity_data["action_date"]),
         comment=activity_data.get("comment", ""),  # コメントはオプション

@@ -3,7 +3,7 @@
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -29,8 +29,8 @@ def opportunity_response():
         "expected_close_date": "2024-06-01",
         "owners": [{"id": str(USER_ID_1), "name": "田中太郎"}],
         "collaborators": [{"id": str(USER_ID_2), "name": "佐藤花子"}],
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
     }
 
 

@@ -3,7 +3,7 @@
 """
 
 import uuid
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -37,8 +37,8 @@ def mock_opportunity():
     opportunity.amount = 5000000
     opportunity.stage_id = STAGE_ID
     opportunity.expected_close_date = date(2024, 6, 1)
-    opportunity.created_at = datetime.utcnow()
-    opportunity.updated_at = datetime.utcnow()
+    opportunity.created_at = datetime.now(UTC)
+    opportunity.updated_at = datetime.now(UTC)
     return opportunity
 
 

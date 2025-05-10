@@ -2,7 +2,7 @@
 オポチュニティ関連サービス
 """
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -231,7 +231,7 @@ async def update_opportunity(
 
     if updated:
         # 更新日時を設定
-        opportunity.updated_at = datetime.utcnow()
+        opportunity.updated_at = datetime.now(UTC)
         session.commit()
         logger.info(f"Updated opportunity: {opportunity_id}")
 

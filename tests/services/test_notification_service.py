@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from unittest.mock import MagicMock
 
 import pytest
-from sqlmodel import select
+from sqlmodel.sql.expression import SelectOfScalar
 
 from models.entity import User
 from services.notification_service import check_progress_notifications
@@ -61,7 +61,13 @@ def mock_owner_relations():
     owner_rel1.user_id = USER_ID_1
     owner_rel1.role = "owner"
 
-    return [owner_rel1]
+    # オポチュニティ2のオーナー関係
+    owner_rel2 = MagicMock()
+    owner_rel2.opportunity_id = OPPORTUNITY_ID_2
+    owner_rel2.user_id = USER_ID_2
+    owner_rel2.role = "owner"
+
+    return {OPPORTUNITY_ID_1: owner_rel1, OPPORTUNITY_ID_2: owner_rel2}
 
 
 @pytest.fixture
@@ -72,7 +78,12 @@ def mock_users():
     user1.name = "田中太郎"
     user1.slack_id = "U12345678"
 
-    return {USER_ID_1: user1}
+    user2 = MagicMock()
+    user2.id = USER_ID_2
+    user2.name = "佐藤花子"
+    user2.slack_id = "U87654321"
+
+    return {USER_ID_1: user1, USER_ID_2: user2}
 
 
 @pytest.fixture
@@ -90,31 +101,37 @@ def mock_session(mock_opportunities, mock_activities, mock_owner_relations, mock
 
     # exec メソッドのモック
     def mock_exec(query):
-        if isinstance(query, select):
+        if isinstance(query, SelectOfScalar):
+            # オーナー関係を取得するクエリ
+            if str(query).find("FROM opportunity_user") > -1:
+                params = query.compile().params
+                if OPPORTUNITY_ID_1 == params.get("opportunity_id_1", ""):
+                    return MagicMock(
+                        all=lambda: [mock_owner_relations.get(OPPORTUNITY_ID_1)]
+                    )
+                elif OPPORTUNITY_ID_2 == params.get("opportunity_id_1", ""):
+                    return MagicMock(
+                        all=lambda: [mock_owner_relations.get(OPPORTUNITY_ID_2)]
+                    )
+                return MagicMock(all=lambda: [])
+
             # オポチュニティを取得するクエリ
-            if str(query).find("Opportunity") > -1:
+            if str(query).find("FROM opportunity") > -1:
                 return MagicMock(all=lambda: mock_opportunities)
 
             # アクティビティログを取得するクエリ
-            elif str(query).find("ActivityLog") > -1:
+            if str(query).find("FROM activity_log") > -1:
                 # クエリに含まれるオポチュニティIDを取得
-                opp_id_str = str(query)
-                if str(OPPORTUNITY_ID_1) in opp_id_str:
+                params = query.compile().params
+                if OPPORTUNITY_ID_1 == params.get("opportunity_id_1", ""):
                     return MagicMock(
                         first=lambda: mock_activities.get(OPPORTUNITY_ID_1)
                     )
-                elif str(OPPORTUNITY_ID_2) in opp_id_str:
+                elif OPPORTUNITY_ID_2 == params.get("opportunity_id_1", ""):
                     return MagicMock(
                         first=lambda: mock_activities.get(OPPORTUNITY_ID_2)
                     )
                 return MagicMock(first=lambda: None)
-
-            # オーナー関係を取得するクエリ
-            elif str(query).find("OpportunityUser") > -1:
-                opp_id_str = str(query)
-                if str(OPPORTUNITY_ID_1) in opp_id_str:
-                    return MagicMock(all=lambda: mock_owner_relations)
-                return MagicMock(all=lambda: [])
 
         return MagicMock(all=lambda: [], first=lambda: None)
 
@@ -131,7 +148,7 @@ async def test_check_progress_notifications(mock_session):
 
     # 結果の検証
     assert len(result) == 1  # 古いアクティビティのオポチュニティのみが通知対象
-    assert result[0]["opportunity_id"] == str(OPPORTUNITY_ID_1)
+    assert result[0]["opportunity_id"] == OPPORTUNITY_ID_1
     assert result[0]["slack_id"] == "U12345678"
     assert result[0]["last_activity_date"] == OLD_DATE.isoformat()
 
@@ -145,7 +162,10 @@ async def test_check_progress_notifications_no_activities(
     original_side_effect = mock_session.exec.side_effect
 
     def updated_exec(query):
-        if isinstance(query, select) and str(query).find("ActivityLog") > -1:
+        if (
+            isinstance(query, SelectOfScalar)
+            and str(query).find("FROM activity_log") > -1
+        ):
             return MagicMock(first=lambda: None)  # アクティビティなし
         return original_side_effect(query)
 
@@ -161,15 +181,16 @@ async def test_check_progress_notifications_no_activities(
 
 
 @pytest.mark.asyncio
-async def test_check_progress_notifications_no_owners(
-    mock_session, mock_owner_relations
-):
+async def test_check_progress_notifications_no_owners(mock_session):
     """オーナーのないオポチュニティの check_progress_notifications のテスト"""
     # exec メソッドのモックを変更して、オーナーがいないケース
     original_side_effect = mock_session.exec.side_effect
 
     def updated_exec(query):
-        if isinstance(query, select) and str(query).find("OpportunityUser") > -1:
+        if (
+            isinstance(query, SelectOfScalar)
+            and str(query).find("FROM opportunity_user") > -1
+        ):
             return MagicMock(all=lambda: [])  # オーナーなし
         return original_side_effect(query)
 

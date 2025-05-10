@@ -89,7 +89,16 @@
 ### モジュール間の関係
 - **slack/**: Slack Event API受信、メッセージ送信
 - **api/**: REST APIエンドポイント定義、リクエスト処理
+  - **api/routes/**: 各機能別のAPIルート定義
+    - activity_routes.py: 営業活動記録関連のエンドポイント
+    - notification_routes.py: 通知関連のエンドポイント
+    - opportunity_routes.py: 案件管理関連のエンドポイント
+    - slack_routes.py: Slack連携関連のエンドポイント
 - **services/**: ビジネスロジック、トランザクション管理
+  - activity_service.py: 営業活動記録のビジネスロジック
+  - notification_service.py: 通知生成のビジネスロジック
+  - opportunity_service.py: 案件管理のビジネスロジック
+  - slack_service.py: Slack連携のビジネスロジック
 - **db/**: データアクセス、リポジトリパターン
 - **agents/**: AI処理、自然言語解析
 - **scheduler/**: 定期実行処理
@@ -125,3 +134,20 @@ customer ────< opportunity >────< opportunity_user >────
 ### イベント駆動
 - Slack Eventをトリガーとした処理
 - スケジューラーによる定期イベント
+
+## 採用した主要な技術方針
+
+### UUIDによるID管理
+- ユーザーIDやオポチュニティIDにUUIDを直接使用
+- 型変換を廃止し、型安全性を向上
+- UUIDの一貫した使用によるデータの整合性確保
+
+### UTC日時の使用
+- 日時データを常にUTCで扱う
+- 表示時にのみローカルタイムゾーンに変換
+- タイムゾーン関連の問題を事前に回避
+
+### クエリの型安全性
+- SelectOfScalarのような明示的な型をクエリに使用
+- 型推論に依存せず、型安全性を向上
+- テスト容易性の向上

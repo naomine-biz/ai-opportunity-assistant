@@ -282,6 +282,8 @@ async def search_opportunities(
     stage_id: Optional[int] = None,
     from_date: Optional[date] = None,
     to_date: Optional[date] = None,
+    min_amount: Optional[int] = None,
+    max_amount: Optional[int] = None,
     session: Session = None,
 ) -> List[Dict]:
     """
@@ -293,6 +295,8 @@ async def search_opportunities(
         stage_id: ステージID
         from_date: 予想クロージング日開始
         to_date: 予想クロージング日終了
+        min_amount: 金額下限（任意）
+        max_amount: 金額上限（任意）
         session: データベースセッション
 
     Returns:
@@ -315,6 +319,16 @@ async def search_opportunities(
 
     if to_date:
         query = query.where(Opportunity.expected_close_date <= to_date)
+
+    if min_amount:
+        query = query.where(Opportunity.amount >= min_amount)
+
+    if max_amount:
+        query = query.where(Opportunity.amount <= max_amount)
+
+    # セッションがない場合は新しく取得
+    if session is None:
+        session = get_session()
 
     # 検索実行
     opportunities = session.exec(query).all()

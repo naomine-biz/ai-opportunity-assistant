@@ -134,9 +134,10 @@ async def delete_opportunity_endpoint(opportunity_id: UUID):
 
 
 @router.get(
-    "/search",
+    "/search/",
     response_model=List[OpportunitySearchResponse],
     status_code=status.HTTP_200_OK,
+    summary="オポチュニティ検索API",
 )
 async def search_opportunities_endpoint(
     customer_id: Optional[UUID] = None,
@@ -144,6 +145,8 @@ async def search_opportunities_endpoint(
     stage_id: Optional[int] = None,
     from_date: Optional[date] = None,
     to_date: Optional[date] = None,
+    min_amount: Optional[int] = None,  # 金額下限（任意）
+    max_amount: Optional[int] = None,  # 金額上限（任意）
 ):
     """
     オポチュニティを検索
@@ -154,13 +157,15 @@ async def search_opportunities_endpoint(
         stage_id: ステージID
         from_date: 予想クロージング日開始
         to_date: 予想クロージング日終了
+        min_amount: 金額下限（任意）
+        max_amount: 金額上限（任意）
 
     Returns:
         検索条件に合致するオポチュニティのリスト
     """
     try:
         result = await search_opportunities(
-            customer_id, title, stage_id, from_date, to_date
+            customer_id, title, stage_id, from_date, to_date, min_amount, max_amount
         )
         logger.info(f"Search opportunities: found {len(result)} results")
         return result

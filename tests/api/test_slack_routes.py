@@ -82,24 +82,15 @@ async def test_slack_signature_verification():
     }.get(x)
 
     # 署名検証が成功するケース
-    with (
-        patch("api.routes.slack_routes.signature_verifier.is_valid", return_value=True),
-        patch(
-            "src.api.routes.slack_routes.signature_verifier.is_valid", return_value=True
-        ),
+    with patch(
+        "api.routes.slack_routes.signature_verifier.is_valid", return_value=True
     ):
         # 例外が発生しないことを確認
         await verify_slack_signature(mock_request)
 
     # 署名検証が失敗するケース
-    with (
-        patch(
-            "api.routes.slack_routes.signature_verifier.is_valid", return_value=False
-        ),
-        patch(
-            "src.api.routes.slack_routes.signature_verifier.is_valid",
-            return_value=False,
-        ),
+    with patch(
+        "api.routes.slack_routes.signature_verifier.is_valid", return_value=False
     ):
         # HTTPException(403)が発生することを確認
         with pytest.raises(HTTPException) as exc_info:

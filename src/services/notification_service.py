@@ -60,9 +60,9 @@ async def check_progress_notifications(
 
                 notifications_to_send.append(
                     {
-                        "user_id": str(owner.id),
+                        "user_id": owner.id,
                         "slack_id": owner.slack_id,
-                        "opportunity_id": str(opp.id),
+                        "opportunity_id": opp.id,
                         "opportunity_title": opp.title,
                         "last_activity_date": latest_activity.action_date.isoformat()
                         if latest_activity

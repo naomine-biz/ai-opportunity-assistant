@@ -1,8 +1,8 @@
 """
 通知APIルートのテスト
 """
+
 import uuid
-from datetime import date
 from unittest.mock import AsyncMock, patch
 
 import pytest

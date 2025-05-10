@@ -40,3 +40,4 @@ htmlcov/
 .coverage.*
 coverage.xml
 *.cover
+**/.claude/settings.local.json

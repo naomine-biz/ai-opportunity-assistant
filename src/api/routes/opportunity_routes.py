@@ -97,9 +97,7 @@ async def update_opportunity_endpoint(
     """
     try:
         # Convert Pydantic model to dictionary, excluding None values
-        update_dict = {
-            k: v for k, v in update_data.dict().items() if v is not None
-        }
+        update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
         await update_opportunity(opportunity_id, update_dict)
         logger.info(f"Updated opportunity: {opportunity_id}")
         return {"status": "updated"}

@@ -45,14 +45,14 @@ async def create_activity_log(activity_data: dict, session: Session = None) -> U
             raise ValueError(f"Missing required field: {field}")
 
     # オポチュニティが存在するか確認
-    opportunity_id = UUID(activity_data["opportunity_id"]) if isinstance(activity_data["opportunity_id"], str) else activity_data["opportunity_id"]
+    opportunity_id = activity_data["opportunity_id"]
     opportunity = session.get(Opportunity, opportunity_id)
     if not opportunity:
         logger.warning(f"Opportunity not found: {activity_data['opportunity_id']}")
         raise ValueError(f"Opportunity not found: {activity_data['opportunity_id']}")
 
     # ユーザーが存在するか確認
-    user_id = UUID(activity_data["user_id"]) if isinstance(activity_data["user_id"], str) else activity_data["user_id"]
+    user_id = activity_data["user_id"]
     user = session.get(User, user_id)
     if not user:
         logger.warning(f"User not found: {activity_data['user_id']}")
@@ -82,8 +82,8 @@ async def create_activity_log(activity_data: dict, session: Session = None) -> U
     logger.info(
         f"Created activity log: {new_activity.id}",
         extra={
-            "opportunity_id": str(new_activity.opportunity_id),
-            "user_id": str(new_activity.user_id),
+            "opportunity_id": new_activity.opportunity_id,
+            "user_id": new_activity.user_id,
             "activity_type_id": new_activity.activity_type_id,
         },
     )

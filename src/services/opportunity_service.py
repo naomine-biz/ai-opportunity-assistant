@@ -1,6 +1,7 @@
 """
 オポチュニティ関連サービス
 """
+
 from datetime import date, datetime
 from typing import Dict, List, Optional
 from uuid import UUID
@@ -56,7 +57,7 @@ async def get_opportunity_by_id(opportunity_id: UUID, session: Session = None) -
 
     for opp_user in opportunity_users:
         user = session.get(User, opp_user.user_id)
-        user_info = {"id": str(user.id), "name": user.name}
+        user_info = {"id": user.id, "name": user.name}
 
         if opp_user.role == "owner":
             owners.append(user_info)
@@ -65,9 +66,9 @@ async def get_opportunity_by_id(opportunity_id: UUID, session: Session = None) -
 
     # レスポンス形式を整える
     response = {
-        "id": str(opportunity.id),
+        "id": opportunity.id,
         "customer": {
-            "id": str(customer.id),
+            "id": customer.id,
             "name": customer.name,
         },
         "title": opportunity.title,
@@ -341,9 +342,9 @@ async def search_opportunities(
 
         result.append(
             {
-                "id": str(opp.id),
+                "id": opp.id,
                 "customer": {
-                    "id": str(customer.id),
+                    "id": customer.id,
                     "name": customer.name,
                 },
                 "title": opp.title,

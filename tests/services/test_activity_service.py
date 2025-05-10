@@ -69,8 +69,8 @@ async def test_create_activity_log(mock_session):
     """create_activity_log のテスト"""
     # アクティビティログデータ
     activity_data = {
-        "opportunity_id": str(OPPORTUNITY_ID),
-        "user_id": str(USER_ID),
+        "opportunity_id": OPPORTUNITY_ID,
+        "user_id": USER_ID,
         "activity_type_id": ACTIVITY_TYPE_ID,
         "action_date": "2024-04-24",
         "comment": "A社訪問済み",
@@ -100,8 +100,8 @@ async def test_create_activity_log_missing_required_field(mock_session):
     """必須フィールドが欠けている場合の create_activity_log のテスト"""
     # 不完全なデータ（action_date が欠けている）
     incomplete_data = {
-        "opportunity_id": str(OPPORTUNITY_ID),
-        "user_id": str(USER_ID),
+        "opportunity_id": OPPORTUNITY_ID,
+        "user_id": USER_ID,
         "activity_type_id": ACTIVITY_TYPE_ID,
         # "action_date" が欠けている
         "comment": "A社訪問済み",
@@ -117,8 +117,8 @@ async def test_create_activity_log_opportunity_not_found(mock_session):
     """存在しないオポチュニティに対する create_activity_log のテスト"""
     # アクティビティログデータ
     activity_data = {
-        "opportunity_id": str(uuid.uuid4()),  # 存在しないオポチュニティID
-        "user_id": str(USER_ID),
+        "opportunity_id": uuid.uuid4(),  # 存在しないオポチュニティID
+        "user_id": USER_ID,
         "activity_type_id": ACTIVITY_TYPE_ID,
         "action_date": "2024-04-24",
         "comment": "A社訪問済み",
@@ -144,8 +144,8 @@ async def test_create_activity_log_user_not_found(mock_session):
     """存在しないユーザーに対する create_activity_log のテスト"""
     # アクティビティログデータ
     activity_data = {
-        "opportunity_id": str(OPPORTUNITY_ID),
-        "user_id": str(uuid.uuid4()),  # 存在しないユーザーID
+        "opportunity_id": OPPORTUNITY_ID,
+        "user_id": uuid.uuid4(),  # 存在しないユーザーID
         "activity_type_id": ACTIVITY_TYPE_ID,
         "action_date": "2024-04-24",
         "comment": "A社訪問済み",
@@ -171,8 +171,8 @@ async def test_create_activity_log_activity_type_not_found(mock_session):
     """存在しないアクティビティタイプに対する create_activity_log のテスト"""
     # アクティビティログデータ
     activity_data = {
-        "opportunity_id": str(OPPORTUNITY_ID),
-        "user_id": str(USER_ID),
+        "opportunity_id": OPPORTUNITY_ID,
+        "user_id": USER_ID,
         "activity_type_id": 999,  # 存在しないアクティビティタイプID
         "action_date": "2024-04-24",
         "comment": "A社訪問済み",
@@ -198,8 +198,8 @@ async def test_create_activity_log_optional_comment(mock_session):
     """コメント（任意項目）がない場合の create_activity_log のテスト"""
     # コメントがないアクティビティログデータ
     activity_data = {
-        "opportunity_id": str(OPPORTUNITY_ID),
-        "user_id": str(USER_ID),
+        "opportunity_id": OPPORTUNITY_ID,
+        "user_id": USER_ID,
         "activity_type_id": ACTIVITY_TYPE_ID,
         "action_date": "2024-04-24",
         # "comment" は省略

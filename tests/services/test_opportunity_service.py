@@ -71,7 +71,7 @@ def mock_users():
     collaborator.id = USER_ID_2
     collaborator.name = "佐藤花子"
 
-    return {str(USER_ID_1): owner, str(USER_ID_2): collaborator}
+    return {USER_ID_1: owner, USER_ID_2: collaborator}
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def mock_session(
         elif model_cls == Stage and id_value == STAGE_ID:
             return mock_stage
         elif model_cls == User:
-            return mock_users.get(str(id_value))
+            return mock_users.get(id_value)
         return None
 
     session.get.side_effect = mock_get
@@ -127,7 +127,7 @@ async def test_get_opportunity_by_id(mock_session):
     result = await get_opportunity_by_id(SAMPLE_OPPORTUNITY_ID, mock_session)
 
     # 結果の検証
-    assert result["id"] == str(SAMPLE_OPPORTUNITY_ID)
+    assert result["id"] == SAMPLE_OPPORTUNITY_ID
     assert result["title"] == "Webシステム導入"
     assert result["amount"] == 5000000
     assert result["stage"]["id"] == STAGE_ID
@@ -153,13 +153,13 @@ async def test_create_opportunity(mock_session):
     """create_opportunity のテスト"""
     # 新しく作成するオポチュニティのデータ
     opportunity_data = {
-        "customer_id": str(CUSTOMER_ID),
+        "customer_id": CUSTOMER_ID,
         "title": "新システム導入",
         "amount": 4000000,
         "stage_id": STAGE_ID,
         "expected_close_date": "2024-07-01",
-        "owners": [str(USER_ID_1)],
-        "collaborators": [str(USER_ID_2)],
+        "owners": [USER_ID_1],
+        "collaborators": [USER_ID_2],
     }
 
     # モックオポチュニティの設定
@@ -174,14 +174,13 @@ async def test_create_opportunity(mock_session):
     with patch(
         "services.opportunity_service.Opportunity", return_value=new_opportunity
     ):
-        with patch(
-            "services.opportunity_service.OpportunityUser", return_value=MagicMock()
-        ):
-            result = await create_opportunity(opportunity_data, mock_session)
+        result = await create_opportunity(opportunity_data, mock_session)
 
     # 結果の検証
     assert result == SAMPLE_OPPORTUNITY_ID
-    assert mock_session.add.call_count == 3  # オポチュニティ + オーナー + コラボレーター
+    assert (
+        mock_session.add.call_count == 3
+    )  # オポチュニティ + オーナー + コラボレーター
     assert mock_session.commit.call_count == 2  # add後 + リレーション作成後
 
 
@@ -190,11 +189,11 @@ async def test_create_opportunity_missing_required_field(mock_session):
     """必須フィールドが欠けている場合の create_opportunity のテスト"""
     # 不完全なデータ（title が欠けている）
     incomplete_data = {
-        "customer_id": str(CUSTOMER_ID),
+        "customer_id": CUSTOMER_ID,
         "amount": 4000000,
         "stage_id": STAGE_ID,
         "expected_close_date": "2024-07-01",
-        "owners": [str(USER_ID_1)],
+        "owners": [USER_ID_1],
     }
 
     # エラーが発生することを検証
@@ -241,7 +240,9 @@ async def test_delete_opportunity(mock_session, mock_opportunity_users):
 
     # 結果の検証
     assert result is True
-    assert mock_session.delete.call_count == 3  # オポチュニティ + オーナー + コラボレーター
+    assert (
+        mock_session.delete.call_count == 3
+    )  # オポチュニティ + オーナー + コラボレーター
     assert mock_session.commit.called
 
 

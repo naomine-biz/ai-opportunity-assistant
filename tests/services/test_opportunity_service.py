@@ -178,9 +178,7 @@ async def test_create_opportunity(mock_session):
 
     # 結果の検証
     assert result == SAMPLE_OPPORTUNITY_ID
-    assert (
-        mock_session.add.call_count == 3
-    )  # オポチュニティ + オーナー + コラボレーター
+    assert mock_session.add.call_count == 3  # オポチュニティ + オーナー + コラボレーター
     assert mock_session.commit.call_count == 2  # add後 + リレーション作成後
 
 
@@ -240,9 +238,7 @@ async def test_delete_opportunity(mock_session, mock_opportunity_users):
 
     # 結果の検証
     assert result is True
-    assert (
-        mock_session.delete.call_count == 3
-    )  # オポチュニティ + オーナー + コラボレーター
+    assert mock_session.delete.call_count == 3  # オポチュニティ + オーナー + コラボレーター
     assert mock_session.commit.called
 
 

@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Python: FastAPI",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
             "args": [
@@ -22,7 +22,7 @@
         },
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -33,10 +33,12 @@
         },
         {
             "name": "Python: Debug Tests",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
-            "purpose": ["debug-test"],
+            "purpose": [
+                "debug-test"
+            ],
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {

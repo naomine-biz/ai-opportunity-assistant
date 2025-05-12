@@ -116,4 +116,5 @@ class NotificationResponse(BaseModel):
     status: str
     target_date: date
     notifications_count: int
+    notifications_sent: int
     notifications: List[NotificationRecipient]

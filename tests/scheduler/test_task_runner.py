@@ -43,7 +43,7 @@ async def test_run_progress_notification_check_success(mock_client):
     call_args = mock_client_instance.post.call_args[0]
 
     # URLパスの検証
-    assert "/api/notification/progress" in call_args[0]
+    assert "/api/v1/notify/progress" in call_args[0]
 
     # 日付パラメータの検証
     today = date.today().isoformat()
@@ -126,7 +126,7 @@ async def test_run_kpi_action_notification_success(mock_client):
     call_args = mock_client_instance.post.call_args[0]
 
     # URLパスの検証
-    assert "/api/notification/kpi" in call_args[0]
+    assert "/api/v1/notify/kpi" in call_args[0]
 
     # パラメータの検証
     assert "user_slack_id" in mock_client_instance.post.call_args[1]["json"]

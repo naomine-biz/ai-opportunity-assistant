@@ -31,7 +31,7 @@ async def run_progress_notification_check() -> int:
         # 内部APIを呼び出す
         async with httpx.AsyncClient(timeout=API_TIMEOUT) as client:
             response = await client.post(
-                f"{BASE_URL}/api/notification/progress",
+                f"{BASE_URL}/notify/progress",
                 json={"target_date": today.isoformat()},
             )
 
@@ -92,9 +92,9 @@ async def run_kpi_action_notification(target_users: Optional[List[Dict]] = None)
                 if not slack_id or not message:
                     continue
 
-                # 内部APIを呼び出す - パスはルーターのプレフィックスによって異なる可能性がある
+                # 内部APIを呼び出す
                 response = await client.post(
-                    f"{BASE_URL}/api/notification/kpi",
+                    f"{BASE_URL}/notify/kpi",
                     json={
                         "user_slack_id": slack_id,
                         "message": message,

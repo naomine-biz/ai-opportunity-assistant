@@ -2,6 +2,14 @@
 
 ## 現在の作業焦点
 
+### ドキュメント構成の更新
+- **memory-bank**: プロジェクトの中核情報を保持（進捗、技術コンテキスト、システムパターンなど）
+- **tasks**: 個別のブランチタスクや作業項目に関するドキュメントを保持
+  - `branch-tasks_api-endpoints-implementation.md`: APIエンドポイント実装関連のタスク
+  - `branch-tasks_sqlite-integration-test-setup.md`: SQLite統合テスト環境のセットアップ関連のタスク
+  - 今後のブランチタスクに関するドキュメントもこのフォルダに格納
+
+
 ### 現在のフェーズ
 - **実装フェーズ**
   - 要件定義完了

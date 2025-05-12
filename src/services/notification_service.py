@@ -32,8 +32,11 @@ async def check_progress_notifications(
     if session is None:
         session = get_session()
     # 進捗確認が必要なオポチュニティを特定
-    # 例：最終アクティビティが7日以上前のオポチュニティ
-    cutoff_date = target_date - timedelta(days=7)
+    # 設定から非アクティブ日数を取得
+    from core.config import settings
+
+    inactivity_days = settings.NOTIFICATION_INACTIVITY_DAYS
+    cutoff_date = target_date - timedelta(days=inactivity_days)
 
     # 全オポチュニティを取得
     opportunities = session.exec(select(Opportunity)).all()
@@ -105,8 +108,13 @@ async def send_progress_notifications(notifications: List[Dict]) -> int:
             continue
 
         # 通知メッセージを構築
+        from core.config import settings
+
         opportunity_title = notification.get("opportunity_title", "不明な案件")
-        message = f"案件「{opportunity_title}」の進捗状況を更新してください。最終活動日から7日以上経過しています。"
+        inactivity_days = settings.NOTIFICATION_INACTIVITY_DAYS
+        message = (
+            f"案件「{opportunity_title}」の進捗状況を更新してください。最終活動日から{inactivity_days}日以上経過しています。"
+        )
 
         try:
             # Slack通知を送信

@@ -13,12 +13,8 @@ from core.logger import get_notification_logger
 logger = get_notification_logger()
 
 # 内部API接続情報
-BASE_URL = "http://127.0.0.1:8000"  # settings.API_BASE_URLがあれば使用する
-API_TIMEOUT = 30.0  # 秒
-
-# 設定がある場合はそちらを優先
-if hasattr(settings, "API_BASE_URL") and settings.API_BASE_URL:
-    BASE_URL = settings.API_BASE_URL
+BASE_URL = settings.API_BASE_URL
+API_TIMEOUT = settings.API_TIMEOUT  # 設定から読み込む
 
 
 async def run_progress_notification_check() -> int:

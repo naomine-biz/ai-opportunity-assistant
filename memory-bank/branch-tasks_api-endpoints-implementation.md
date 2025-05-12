@@ -10,10 +10,8 @@
   - [x] DELETE `/opportunity/{opportunity_id}` - オポチュニティ削除
   - [x] エラーハンドリングの実装
 
-- [ ] **アクティビティログAPIの実装**
-  - [ ] GET `/activity` - アクティビティログ一覧取得
-  - [ ] GET `/activity/{activity_id}` - 個別アクティビティログ取得
-  - [x] POST `/activity` - アクティビティログ登録
+- [x] **アクティビティログAPIの実装**
+  - [x] POST `/activity_log` - アクティビティログ登録
   - [x] エラーハンドリングの実装
 
 - [x] **Slackイベント受信APIの実装**
@@ -47,20 +45,23 @@
   - [x] オポチュニティ検索・フィルタリング機能（search_opportunities）
   - [x] ユーザー関連付け機能の実装（owner、collaborator関係）
 
-- [ ] **アクティビティサービスの実装**
+- [x] **アクティビティサービスの実装**
   - [x] アクティビティ記録機能（create_activity_log）
-  - [ ] アクティビティ履歴取得機能
-  - [ ] 期間別アクティビティ取得機能
 
 - [ ] **通知サービスの完成**
   - [x] 進捗確認通知ロジックの実装（基本実装済み）
   - [ ] 実際の通知実行部分の実装
 
 - [ ] **Slackサービスの基本実装**
-  - [x] イベント処理機能（process_slack_event）
-  - [x] URL検証チャレンジ処理（handle_slack_verification_challenge）
-  - [ ] メッセージ送信機能
-  - [ ] ユーザー情報取得機能
+  - [x] イベント処理機能（process_slack_event）- handlers.pyで実装
+  - [x] URL検証チャレンジ処理（handle_slack_verification_challenge）- handlers.pyで実装
+  - [ ] メッセージ送信機能 - bot.pyで実装予定
+  - [ ] ユーザー情報取得機能 - bot.pyで実装予定
+
+### Slack関連ファイルの責務分担
+- `slack/handlers.py` - Slackからの**受信**処理（イベント処理、コマンド解析）
+- `slack/bot.py` - Slackへの**送信**処理（メッセージ送信、ユーザー情報取得）※現在未実装
+- `slack/models.py` - Slackデータ構造の定義
 
 ## 4. モックベースのテスト実装（基本レベル）
 

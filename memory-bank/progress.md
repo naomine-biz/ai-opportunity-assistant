@@ -24,11 +24,11 @@
 
 ### 進行中の項目
 - 🔄 APIエンドポイント定義の実装
-  - APIルートの作成中（activity、notification、opportunity、slackルート）
+  - APIルートの作成中（activity_log、notification、opportunity、slackルート）
   - スキーマ定義とバリデーション実装中
   - テスト実装中
 - 🔄 サービス層の基本実装
-  - 各種サービスクラスの実装中（activity、notification、opportunity、slackサービス）
+  - 各種サービスクラスの実装中（activity_log、notification、opportunity、slackサービス）
 
 ### 未着手の項目
 - ⬜ Slack連携の実装
@@ -89,6 +89,9 @@
 - テストフレームワークの設定最適化
   - pytest.iniの設定更新
   - DeprecationWarningを無視するフィルタ追加
+- 設計と実装の整合性確保
+  - API仕様書（docs/API仕様.md）に基づいた実装を徹底
+  - 仕様書に記載のないエンドポイントの削除
 
 ## 既知の課題
 

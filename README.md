@@ -67,7 +67,27 @@ ai-opportunity-assistant/
 ### テスト実行
 
 ```bash
+# 自動テスト実行（モックテスト）
 poetry run pytest
+
+# Slack通知テストスクリプト
+# 実際のSlack APIを使用して通知機能をテストする
+poetry run python test_slack_channels.py
+```
+
+### Slack連携テスト
+
+プロジェクトには以下のSlack連携テストスクリプトが含まれています：
+
+- `test_slack_channels.py`: generalチャンネルへのメッセージ送信をテストします。
+
+これらのスクリプトは自動テスト（pytest）とは別に、実際のSlack APIとの連携確認のために使用します。
+テストを実行する前に、`.env`ファイルにSlack API認証情報を設定してください。
+
+```
+# Slack連携設定
+SLACK_BOT_TOKEN=xoxb-XXXXXXXX     # SlackボットトークンID
+SLACK_SIGNING_SECRET=XXXXXXXX      # Slack署名シークレット
 ```
 
 ### リント実行

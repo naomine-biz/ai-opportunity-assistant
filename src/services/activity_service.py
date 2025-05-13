@@ -7,10 +7,10 @@ from uuid import UUID
 
 from sqlmodel import Session
 
-from core.logger import get_activity_logger
-from db.session import get_session
-from models.entity import ActivityLog, Opportunity, User
-from models.master import ActivityType
+from src.core.logger import get_activity_logger
+from src.db.session import get_session
+from src.models.entity import ActivityLog, Opportunity, User
+from src.models.master import ActivityType
 
 logger = get_activity_logger()
 

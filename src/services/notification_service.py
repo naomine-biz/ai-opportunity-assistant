@@ -7,10 +7,10 @@ from typing import Dict, List, Optional
 
 from sqlmodel import Session, select
 
-from core.logger import get_notification_logger
-from db.session import get_session
-from models.entity import ActivityLog, Opportunity, OpportunityUser, User
-from slack.bot import slack_bot
+from src.core.logger import get_notification_logger
+from src.db.session import get_session
+from src.models.entity import ActivityLog, Opportunity, OpportunityUser, User
+from src.slack.bot import slack_bot
 
 logger = get_notification_logger()
 
@@ -33,7 +33,7 @@ async def check_progress_notifications(
         session = get_session()
     # 進捗確認が必要なオポチュニティを特定
     # 設定から非アクティブ日数を取得
-    from core.config import settings
+    from src.core.config import settings
 
     inactivity_days = settings.NOTIFICATION_INACTIVITY_DAYS
     cutoff_date = target_date - timedelta(days=inactivity_days)
@@ -108,7 +108,7 @@ async def send_progress_notifications(notifications: List[Dict]) -> int:
             continue
 
         # 通知メッセージを構築
-        from core.config import settings
+        from src.core.config import settings
 
         opportunity_title = notification.get("opportunity_title", "不明な案件")
         inactivity_days = settings.NOTIFICATION_INACTIVITY_DAYS

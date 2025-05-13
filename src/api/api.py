@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.routes import (
+from src.api.routes import (
     activity_routes,
     notification_routes,
     opportunity_routes,

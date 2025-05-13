@@ -4,7 +4,7 @@ import sys
 import uuid
 from typing import Any, Dict, Optional
 
-from core.config import settings
+from src.core.config import settings
 
 
 class JsonFormatter(logging.Formatter):

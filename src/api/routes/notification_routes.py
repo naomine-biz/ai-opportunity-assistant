@@ -1,5 +1,8 @@
 """
 通知関連APIルート定義
+
+活動状況や期限に基づいて営業担当者へ通知を送信するためのエンドポイントを提供します。
+オポチュニティの進捗確認通知やKPI達成を促す通知など、様々な通知機能を実装しています。
 """
 
 import uuid
@@ -8,9 +11,9 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from api.schemas import NotificationRequest, NotificationResponse
-from core.logger import get_notification_logger
-from services.notification_service import (
+from src.api.schemas import NotificationRequest, NotificationResponse
+from src.core.logger import get_notification_logger
+from src.services.notification_service import (
     check_progress_notifications,
     send_kpi_notification,
     send_progress_notifications,
@@ -21,7 +24,37 @@ logger = get_notification_logger()
 
 
 @router.post(
-    "/progress", response_model=NotificationResponse, status_code=status.HTTP_200_OK
+    "/progress",
+    response_model=NotificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="進捗確認通知の送信",
+    description="指定された日付を基準として、進捗確認が必要なオポチュニティを特定し、担当者に通知を送信します。",
+    response_description="通知処理の結果サマリー",
+    responses={
+        200: {
+            "description": "通知処理が完了しました",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "completed",
+                        "target_date": "2025-05-13",
+                        "notifications_count": 3,
+                        "notifications_sent": 2,
+                        "notifications": [
+                            {
+                                "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                                "slack_id": "U01234ABC",
+                                "opportunity_id": "123e4567-e89b-12d3-a456-4266141741",
+                                "opportunity_title": "システム導入案件",
+                                "last_activity_date": "2025-04-30",
+                            }
+                        ],
+                    }
+                }
+            },
+        },
+        500: {"description": "通知処理中にエラーが発生しました"},
+    },
 )
 async def send_progress_notification(notification_data: NotificationRequest):
     """
@@ -84,7 +117,27 @@ class KpiNotificationResponse(BaseModel):
 
 
 @router.post(
-    "/kpi", response_model=KpiNotificationResponse, status_code=status.HTTP_200_OK
+    "/kpi",
+    response_model=KpiNotificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="KPI通知の送信",
+    description="特定のユーザーにKPI達成を促す通知を送信します。オポチュニティの情報を含めることもできます。",
+    response_description="KPI通知の送信結果",
+    responses={
+        200: {
+            "description": "KPI通知の処理結果",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "completed",
+                        "success": True,
+                        "user_slack_id": "U01234ABC",
+                    }
+                }
+            },
+        },
+        500: {"description": "KPI通知の送信中にエラーが発生しました"},
+    },
 )
 async def send_kpi_action_notification(notification_data: KpiNotificationRequest):
     """

@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
-from models.base import TimestampMixin
+from src.models.base import TimestampMixin
 
 
 class Stage(TimestampMixin, SQLModel, table=True):

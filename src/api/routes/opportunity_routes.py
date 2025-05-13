@@ -1,5 +1,7 @@
 """
 オポチュニティ関連APIルート定義
+
+オポチュニティ（営業案件）の作成・更新・検索などのAPIエンドポイントを提供します。
 """
 
 from datetime import date
@@ -8,14 +10,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Response, status
 
-from api.schemas import (
+from src.api.schemas import (
     OpportunityCreate,
     OpportunityResponse,
     OpportunitySearchResponse,
     OpportunityUpdate,
 )
-from core.logger import get_opportunity_logger
-from services.opportunity_service import (
+from src.core.logger import get_opportunity_logger
+from src.services.opportunity_service import (
     create_opportunity,
     delete_opportunity,
     get_opportunity_by_id,
@@ -31,6 +33,10 @@ logger = get_opportunity_logger()
     "/{opportunity_id}",
     response_model=OpportunityResponse,
     status_code=status.HTTP_200_OK,
+    summary="オポチュニティ詳細取得",
+    description="指定されたIDのオポチュニティ詳細情報を取得します。",
+    response_description="オポチュニティの詳細情報",
+    responses={404: {"description": "指定されたIDのオポチュニティが見つかりません"}},
 )
 async def get_opportunity(opportunity_id: UUID):
     """
@@ -53,7 +59,25 @@ async def get_opportunity(opportunity_id: UUID):
         )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="オポチュニティ新規作成",
+    description="新規オポチュニティを作成します。顧客ID、案件名、金額、ステージ、予想クロージング日、担当者情報を指定します。",
+    response_description="作成されたオポチュニティのID",
+    responses={
+        201: {
+            "description": "オポチュニティが正常に作成されました",
+            "content": {
+                "application/json": {
+                    "example": {"id": "123e4567-e89b-12d3-a456-426614174000"}
+                }
+            },
+        },
+        400: {"description": "無効なリクエストデータ"},
+        404: {"description": "関連リソース（顧客、ユーザー、ステージなど）が見つかりません"},
+    },
+)
 async def create_opportunity_endpoint(opportunity_data: OpportunityCreate):
     """
     新規オポチュニティを作成
@@ -80,7 +104,21 @@ async def create_opportunity_endpoint(opportunity_data: OpportunityCreate):
         raise HTTPException(status_code=status_code, detail=detail)
 
 
-@router.put("/{opportunity_id}", status_code=status.HTTP_200_OK)
+@router.put(
+    "/{opportunity_id}",
+    status_code=status.HTTP_200_OK,
+    summary="オポチュニティ情報更新",
+    description="オポチュニティの情報を更新します。更新したいフィールドのみを指定できます。",
+    response_description="更新成功レスポンス",
+    responses={
+        200: {
+            "description": "オポチュニティが正常に更新されました",
+            "content": {"application/json": {"example": {"status": "updated"}}},
+        },
+        400: {"description": "無効な更新データ"},
+        404: {"description": "指定されたIDのオポチュニティが見つかりません"},
+    },
+)
 async def update_opportunity_endpoint(
     opportunity_id: UUID,
     update_data: OpportunityUpdate,
@@ -111,7 +149,17 @@ async def update_opportunity_endpoint(
         raise HTTPException(status_code=status_code, detail=detail)
 
 
-@router.delete("/{opportunity_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{opportunity_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="オポチュニティ削除",
+    description="指定されたIDのオポチュニティを削除します。",
+    response_description="削除成功（コンテンツなし）",
+    responses={
+        204: {"description": "オポチュニティが正常に削除されました"},
+        404: {"description": "指定されたIDのオポチュニティが見つかりません"},
+    },
+)
 async def delete_opportunity_endpoint(opportunity_id: UUID):
     """
     オポチュニティを削除
@@ -137,7 +185,36 @@ async def delete_opportunity_endpoint(opportunity_id: UUID):
     "/search/",
     response_model=List[OpportunitySearchResponse],
     status_code=status.HTTP_200_OK,
-    summary="オポチュニティ検索API",
+    summary="オポチュニティ検索",
+    description="""
+    指定された条件に基づきオポチュニティを検索します。
+    複数の検索条件を組み合わせることで、柔軟な検索が可能です。
+    すべての検索条件はオプショナルです。
+    """,
+    response_description="検索条件に合致するオポチュニティのリスト",
+    responses={
+        200: {
+            "description": "検索結果",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                            "customer": {
+                                "id": "123e4567-e89b-12d3-a456-426614174001",
+                                "name": "サンプル顧客株式会社",
+                            },
+                            "title": "システム提案案件",
+                            "amount": 1000000,
+                            "stage": {"id": 2, "name": "提案中"},
+                            "expected_close_date": "2025-06-30",
+                        }
+                    ]
+                }
+            },
+        },
+        500: {"description": "検索処理に失敗しました"},
+    },
 )
 async def search_opportunities_endpoint(
     customer_id: Optional[UUID] = None,

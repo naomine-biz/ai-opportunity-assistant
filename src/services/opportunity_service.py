@@ -8,10 +8,10 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from core.logger import get_opportunity_logger
-from db.session import get_session
-from models.entity import Customer, Opportunity, OpportunityUser, User
-from models.master import Stage
+from src.core.logger import get_opportunity_logger
+from src.db.session import get_session
+from src.models.entity import Customer, Opportunity, OpportunityUser, User
+from src.models.master import Stage
 
 logger = get_opportunity_logger()
 

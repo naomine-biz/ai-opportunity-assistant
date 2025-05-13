@@ -1,9 +1,16 @@
+"""
+Slack関連APIルート定義
+
+Slack Event APIとの連携や、Slackへの通知送信のためのエンドポイントを提供します。
+Slackからのイベント受信、署名検証、および各種イベント処理を実装しています。
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from slack_sdk.signature import SignatureVerifier
 
-from core.config import settings
-from core.logger import get_slack_logger
-from services.slack_service import (
+from src.core.config import settings
+from src.core.logger import get_slack_logger
+from src.services.slack_service import (
     handle_slack_verification_challenge,
     process_slack_event,
 )
@@ -49,7 +56,36 @@ async def verify_slack_signature(request: Request):
         raise HTTPException(status_code=403, detail="Invalid Slack signature")
 
 
-@router.post("/events", dependencies=[Depends(verify_slack_signature)])
+@router.post(
+    "/events",
+    dependencies=[Depends(verify_slack_signature)],
+    summary="Slack イベント受信エンドポイント",
+    description="""
+    Slack Event APIからのイベントを受信して処理するエンドポイント。
+    
+    - URL検証チャレンジへの応答
+    - メッセージイベントの処理
+    - その他のイベントの処理
+    
+    すべてのリクエストはSlackの署名検証を通過する必要があります。
+    """,
+    response_description="イベント処理結果",
+    responses={
+        202: {"description": "イベントが正常に処理されました（非同期処理）"},
+        204: {"description": "イベントは受信しましたが、処理は行いませんでした"},
+        403: {"description": "Slackの署名検証に失敗しました"},
+        200: {
+            "description": "URL検証チャレンジのレスポンス",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "challenge": "3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7"
+                    }
+                }
+            },
+        },
+    },
+)
 async def slack_events(request: Request):
     """
     Slack Event APIエンドポイント

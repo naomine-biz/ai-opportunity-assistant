@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Optional
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
 
-from core.config import settings
-from core.logger import get_slack_logger
+from src.core.config import settings
+from src.core.logger import get_slack_logger
 
 logger = get_slack_logger()
 

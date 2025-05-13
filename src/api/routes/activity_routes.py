@@ -1,19 +1,39 @@
 """
 アクティビティログ関連APIルート定義
+
+営業活動の記録を管理するためのエンドポイントを提供します。
+営業担当者による顧客訪問、電話、メール等の活動履歴を記録します。
 """
 
 from fastapi import APIRouter, HTTPException, status
 
-from api.schemas import ActivityLogCreate, ActivityLogResponse
-from core.logger import get_activity_logger
-from services.activity_service import create_activity_log
+from src.api.schemas import ActivityLogCreate, ActivityLogResponse
+from src.core.logger import get_activity_logger
+from src.services.activity_service import create_activity_log
 
 router = APIRouter()
 logger = get_activity_logger()
 
 
 @router.post(
-    "", response_model=ActivityLogResponse, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=ActivityLogResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="アクティビティログ新規作成",
+    description="営業活動の記録を新規に作成します。オポチュニティID、ユーザーID、活動種別、実施日などを指定します。",
+    response_description="作成されたアクティビティログのID",
+    responses={
+        201: {
+            "description": "アクティビティログが正常に作成されました",
+            "content": {
+                "application/json": {
+                    "example": {"id": "123e4567-e89b-12d3-a456-426614174000"}
+                }
+            },
+        },
+        400: {"description": "無効なリクエストデータ"},
+        404: {"description": "関連リソース（オポチュニティ、ユーザー、活動種別など）が見つかりません"},
+    },
 )
 async def create_activity_log_endpoint(activity_data: ActivityLogCreate):
     """

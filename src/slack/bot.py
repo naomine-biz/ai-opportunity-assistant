@@ -2,8 +2,12 @@
 Slack Bot モジュール - Slackへのメッセージ送信と情報取得を担当
 """
 
+import asyncio
 import uuid
 from typing import Any, Dict, List, Optional
+
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.async_client import AsyncWebClient
 
 from core.config import settings
 from core.logger import get_slack_logger
@@ -19,10 +23,13 @@ class SlackBot:
     def __init__(self):
         """SlackBotの初期化"""
         self.bot_token = settings.SLACK_BOT_TOKEN
+        self.client = AsyncWebClient(token=self.bot_token)
+        self.rate_limit_delay = 1.0  # APIレート制限時のデフォルト遅延(秒)
+        self.max_retries = 3  # API呼び出し失敗時の最大リトライ回数
         logger.info("Initializing SlackBot")
 
-        # モック実装用のフラグ
-        self.use_mock = True  # 本番実装時はFalseに切り替える
+        # 本番実装
+        self.use_mock = False
 
     async def send_message(
         self, channel_id: str, text: str, blocks: Optional[List[Dict[str, Any]]] = None
@@ -58,20 +65,13 @@ class SlackBot:
                 },
             }
         else:
-            # 実際のSlack APIを呼び出す実装（本番用、現在はコメントアウト）
-            """
-            from slack_sdk.web.async_client import AsyncWebClient
-
-            client = AsyncWebClient(token=self.bot_token)
-            response = await client.chat_postMessage(
+            # 実際のSlack APIを呼び出す実装
+            return await self._call_slack_api(
+                method="chat_postMessage",
                 channel=channel_id,
                 text=text,
-                blocks=blocks
+                blocks=blocks,
             )
-            return response
-            """
-            # 現状ではモック実装のみ
-            pass
 
     async def send_notification(
         self,
@@ -127,7 +127,7 @@ class SlackBot:
                 fields.append(
                     {
                         "type": "mrkdwn",
-                        "text": f"*案件名 : *\n{title}",
+                        "text": f"*【案件名】*\n{title}",
                     }
                 )
 
@@ -136,7 +136,7 @@ class SlackBot:
                 fields.append(
                     {
                         "type": "mrkdwn",
-                        "text": f"*最終活動日 : *\n{last_date}",
+                        "text": f"*【最終活動日】*\n{last_date}",
                     }
                 )
 
@@ -192,16 +192,78 @@ class SlackBot:
                 },
             }
         else:
-            # 実際のSlack APIを呼び出す実装（本番用、現在はコメントアウト）
-            """
-            from slack_sdk.web.async_client import AsyncWebClient
+            # 実際のSlack APIを呼び出す実装
+            return await self._call_slack_api(method="users_info", user=user_id)
 
-            client = AsyncWebClient(token=self.bot_token)
-            response = await client.users_info(user=user_id)
+    async def _call_slack_api(
+        self, method: str, retry_count: int = 0, **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Slack APIを呼び出すためのヘルパーメソッド (レート制限とエラー処理を含む)
+
+        Args:
+            method: 呼び出すAPIメソッド名
+            retry_count: 現在のリトライ回数
+            **kwargs: APIに渡す引数
+
+        Returns:
+            APIレスポンス
+        """
+        try:
+            # APIメソッドの動的呼び出し
+            api_method = getattr(self.client, method)
+            response = await api_method(**kwargs)
             return response
-            """
-            # 現状ではモック実装のみ
-            pass
+        except SlackApiError as e:
+            error = e.response["error"]
+
+            # レート制限エラーの処理
+            if error == "ratelimited":
+                retry_after = int(
+                    e.response.headers.get("Retry-After", self.rate_limit_delay)
+                )
+                logger.warning(
+                    f"Slack API rate limit reached. {retry_after}秒後にリトライ",
+                    extra={"method": method, "retry_after": retry_after},
+                )
+
+                # 適切な時間待機後、リトライ
+                await asyncio.sleep(retry_after)
+                return await self._call_slack_api(method, retry_count, **kwargs)
+
+            # その他のエラーの処理
+            elif retry_count < self.max_retries:
+                # バックオフ戦略でリトライ (指数関数的に待機時間を増やす)
+                wait_time = (2**retry_count) * self.rate_limit_delay
+                logger.warning(
+                    f"Slack API error: {error}. {wait_time: .1f} 秒後にリトライします",
+                    extra={
+                        "method": method,
+                        "error": error,
+                        "retry_count": retry_count + 1,
+                    },
+                )
+
+                await asyncio.sleep(wait_time)
+                return await self._call_slack_api(method, retry_count + 1, **kwargs)
+            else:
+                # 最大リトライ回数を超えた場合
+                logger.error(
+                    "Slack API呼び出しが最大リトライ回数に達しました",
+                    extra={
+                        "method": method,
+                        "error": error,
+                        "max_retries": self.max_retries,
+                    },
+                )
+                # エラー情報を含むレスポンスを返す
+                return {
+                    "ok": False,
+                    "error": error,
+                    "response_metadata": {
+                        "messages": [f"{self.max_retries}回のリトライ後に失敗"]
+                    },
+                }
 
 
 # シングルトンインスタンス

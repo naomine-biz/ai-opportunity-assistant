@@ -4,7 +4,7 @@ import sys
 import uuid
 from typing import Any, Dict, Optional
 
-from core.config import settings
+from src.core.config import settings
 
 
 class JsonFormatter(logging.Formatter):
@@ -96,7 +96,16 @@ def setup_logging() -> None:
     root_logger.addHandler(handler)
 
     # 主要ロガーの設定
-    for logger_name in ["app.access", "app.slack", "app.audit", "app.app"]:
+    logger_names = [
+        "app.access",
+        "app.slack",
+        "app.audit",
+        "app.app",
+        "app.opportunity",
+        "app.activity",
+        "app.notification",
+    ]
+    for logger_name in logger_names:
         logger = logging.getLogger(logger_name)
         logger.setLevel(log_level)
 
@@ -120,3 +129,15 @@ def get_audit_logger(request_id: Optional[str] = None) -> logging.LoggerAdapter:
 
 def get_app_logger(request_id: Optional[str] = None) -> logging.LoggerAdapter:
     return get_logger("app.app", request_id)
+
+
+def get_opportunity_logger(request_id: Optional[str] = None) -> logging.LoggerAdapter:
+    return get_logger("app.opportunity", request_id)
+
+
+def get_activity_logger(request_id: Optional[str] = None) -> logging.LoggerAdapter:
+    return get_logger("app.activity", request_id)
+
+
+def get_notification_logger(request_id: Optional[str] = None) -> logging.LoggerAdapter:
+    return get_logger("app.notification", request_id)

@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, Optional
 
-from core.logger import get_slack_logger
+from src.core.logger import get_slack_logger
 
 logger = get_slack_logger()
 

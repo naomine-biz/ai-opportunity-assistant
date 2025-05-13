@@ -4,8 +4,8 @@ Slackサービスモジュール - API層とSlack処理モジュールの橋渡�
 
 from typing import Any, Dict
 
-from core.logger import get_slack_logger
-from slack.handlers import slack_event_handler
+from src.core.logger import get_slack_logger
+from src.slack.handlers import slack_event_handler
 
 logger = get_slack_logger()
 

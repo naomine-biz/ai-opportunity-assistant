@@ -2,8 +2,8 @@ from typing import Generator
 
 from sqlmodel import Session, SQLModel, create_engine
 
-from core.config import settings
-from core.logger import get_app_logger
+from src.core.config import settings
+from src.core.logger import get_app_logger
 
 logger = get_app_logger()
 

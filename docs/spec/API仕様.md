@@ -13,16 +13,17 @@
 
 ## 🎯 API一覧
 
-| メソッド | パス                | 説明                          |
-| -------- | ------------------- | ----------------------------- |
-| POST     | /slack/events       | Slack Event APIエンドポイント |
-| GET      | /opportunity/{id}   | オポチュニティ詳細取得        |
-| POST     | /opportunity        | オポチュニティ新規作成        |
-| PUT      | /opportunity/{id}   | オポチュニティ更新            |
-| DELETE   | /opportunity/{id}   | オポチュニティ削除            |
-| GET      | /opportunity/search | オポチュニティ検索            |
-| POST     | /activity_log       | アクティビティログ記録        |
-| POST     | /notify/progress    | スケジューラー通知トリガ      |
+| メソッド | パス                | 説明                           |
+| -------- | ------------------- | ------------------------------ |
+| POST     | /slack/events       | Slack Event APIエンドポイント  |
+| GET      | /opportunity/{id}   | オポチュニティ詳細取得         |
+| POST     | /opportunity        | オポチュニティ新規作成         |
+| PUT      | /opportunity/{id}   | オポチュニティ更新             |
+| DELETE   | /opportunity/{id}   | オポチュニティ削除             |
+| GET      | /opportunity/search | オポチュニティ検索             |
+| POST     | /activity_log       | アクティビティログ記録         |
+| POST     | /notify/progress    | 進捗確認の通知送信（内部API）  |
+| POST     | /notify/kpi         | KPI達成促進通知送信（内部API） |
 
 ---
 
@@ -232,7 +233,7 @@ Slack Event APIの仕様に従う。特記事項なし。
 ## ✅ POST /notify/progress
 
 ### 説明
-スケジューラーから進捗通知処理をトリガする内部API。
+進捗確認の通知を送信する内部API。スケジューラーから定期的に呼び出される。
 
 ### リクエストパラメータ
 
@@ -249,13 +250,90 @@ Slack Event APIの仕様に従う。特記事項なし。
 
 ### レスポンス例
 200 OK
+```json
+{
+  "status": "completed",
+  "target_date": "2024-04-24",
+  "notifications_count": 5,
+  "notifications_sent": 3,
+  "notifications": [...]
+}
+```
 
 ---
+
+## ✅ POST /notify/kpi
+
+### 説明
+KPI達成を促す通知を特定ユーザーに送信する内部API。スケジューラーから定期的に呼び出される。
+
+### リクエストパラメータ
+
+| 名称              | 型     | 説明                     |
+| ----------------- | ------ | ------------------------ |
+| user_slack_id     | string | 通知先ユーザーのSlack ID |
+| message           | string | 通知メッセージ           |
+| opportunity_id    | UUID   | 関連する案件ID（任意）   |
+| opportunity_title | string | 関連する案件名（任意）   |
+
+### リクエスト例
+```json
+{
+  "user_slack_id": "U12345678",
+  "message": "今週の会議数KPIが未達成です。あと2件の会議を設定しましょう。",
+  "opportunity_id": "123e4567-e89b-12d3-a456-426614174000",
+  "opportunity_title": "A社クラウド移行案件"
+}
+```
+
+### レスポンス例
+200 OK
+```json
+{
+  "status": "completed",
+  "success": true,
+  "user_slack_id": "U12345678"
+}
+```
+
+---
+
+## 🔧 設定パラメータ
+
+### 内部API接続設定
+
+| 設定名       | 型     | 説明                       | デフォルト値          |
+| ------------ | ------ | -------------------------- | --------------------- |
+| API_BASE_URL | string | 内部API呼び出し用ベースURL | http://127.0.0.1:8000 |
+| API_TIMEOUT  | float  | API呼び出しのタイムアウト  | 30.0（秒）            |
+
+### スケジューラー設定
+
+| 設定名                        | 型     | 説明                                 | デフォルト値 |
+| ----------------------------- | ------ | ------------------------------------ | ------------ |
+| SCHEDULER_TIMEZONE            | string | スケジューラーのタイムゾーン         | Asia/Tokyo   |
+| SCHEDULER_PROGRESS_CHECK_CRON | string | 進捗確認実行スケジュール（cron形式） | 0 9 * * *    |
+| SCHEDULER_KPI_CHECK_CRON      | string | KPI確認実行スケジュール（cron形式）  | 0 10 * * 1   |
+
+### 通知条件設定
+
+| 設定名                       | 型  | 説明                                       | デフォルト値 |
+| ---------------------------- | --- | ------------------------------------------ | ------------ |
+| NOTIFICATION_INACTIVITY_DAYS | int | この日数以上アクティビティがない場合に通知 | 3            |
+| NOTIFICATION_RETRY_DAYS      | int | 通知後、この日数経過で再通知               | 2            |
+
+### Slack通知設定
+
+| 設定名                     | 型      | 説明                                         | デフォルト値 |
+| -------------------------- | ------- | -------------------------------------------- | ------------ |
+| SLACK_NOTIFICATION_CHANNEL | string  | 特定のチャンネルに通知する場合（空欄ならDM） | 空欄         |
+| SLACK_MENTION_ON_CHANNEL   | boolean | チャンネル通知時にメンションをつけるか       | true         |
+
 
 ## 🚩 注意事項
 
 - `/slack/events` は verification challenge 対応必須。
-- `/notify/progress` は内部APIとして外部非公開 or 認証保護すること。
+- `/notify/*` は内部APIとして外部非公開 or 認証保護すること。
 
 ---
 

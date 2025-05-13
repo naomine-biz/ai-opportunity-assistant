@@ -8,6 +8,7 @@
   - 自動APIドキュメント生成（OpenAPI/Swagger）
   - 型アノテーションによる堅牢性
   - AI/MLライブラリとの親和性が高い
+  - 依存性注入を活用したテスト容易性
 
 ### エージェントモジュール（自然言語処理・ルールロジック）
 - **Python**
@@ -30,6 +31,7 @@
   - FastAPIとの親和性（同じ作者によるライブラリ）
   - SQLAlchemyベースで拡張性高い
   - Pydantic型と連携し、APIスキーマとの一貫性
+  - UUIDフィールドの直接サポート
 
 ### Slack連携
 - **slack_sdk (Python)**
@@ -48,7 +50,7 @@
 
 ### 環境構築
 - **Python 3.9+**
-- **Poetry** または **pip + requirements.txt** による依存管理
+- **Poetry** による依存管理
 - **.env** ファイルによる環境変数管理
 
 ### 開発ツール
@@ -61,6 +63,10 @@
 - **GitHub** でのソース管理
 - **GitHub Actions** による自動テスト・CI/CD
 - **Conventional Commit** 準拠のコミットメッセージ（推奨）
+- **Feature Branch Workflow** によるブランチ管理
+  - `feature/`プレフィックスでフィーチャーブランチを作成
+  - 機能ごとにブランチを分けて開発
+  - 現在の機能: `feature/api-endpoints-implementation`
 
 ### CI/CD構成
 - **CI**: GitHub Actions上でDocker環境を使用
@@ -122,6 +128,7 @@ flake8==6.0.0
 - `.env` ファイルに環境変数形式で設定値を管理
 - `config.py` にて `.env` から設定値を読み込み、アプリケーションで利用
 - `.env.example` をリポジトリに含め、設定項目の仕様書とする
+- 環境変数による挙動切り替え（開発/テスト/本番）
 
 ### ログ管理
 - JSON形式の構造化ログ
@@ -133,3 +140,29 @@ flake8==6.0.0
 - APIテスト：FastAPIエンドポイントの統合テスト
 - シナリオテスト：Slackイベント処理、スケジューラーのE2Eテスト
 - pytest + unittest.mock を使用
+- pytest.ini でDeprecationWarningを無視する設定
+
+### デバッグ方法
+- VS Code用のlaunch.jsonを用意し、デバッグ設定を共有
+- UvicornサーバーでのHot Reloadによる開発効率向上
+
+## 実装パターン
+
+### データアクセス
+- SQLModelを使用したORMベースのデータアクセス
+- リポジトリパターンによる抽象化
+- トランザクション管理はサービスレイヤーで実施
+
+### ID管理
+- UUIDを直接使用した型安全なID管理
+- 文字列型への変換を廃止し、一貫してUUID型で扱う
+- APIリクエスト/レスポンス時の自動変換
+
+### 日時管理
+- UTC日時を常に使用
+- データベース格納時も常にUTC
+- タイムゾーン変換は表示レイヤーのみ
+
+### クエリパターン
+- SelectOfScalarなど明示的な型を持つクエリの使用
+- 型安全性の向上とテスト容易性の確保

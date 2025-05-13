@@ -3,8 +3,8 @@ from uuid import UUID
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from models.base import TimestampMixin, UUIDMixin
-from models.master import ActivityType, Stage
+from src.models.base import TimestampMixin, UUIDMixin
+from src.models.master import ActivityType, Stage
 
 
 class User(UUIDMixin, TimestampMixin, SQLModel, table=True):

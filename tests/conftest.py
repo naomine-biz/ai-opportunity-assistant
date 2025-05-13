@@ -55,12 +55,16 @@ def client(mock_verify_slack_signature):
         session = MagicMock()
         yield session
 
+    # サービス層の内部セッション取得をオーバーライドするため、db_service.pyにもモックを適用
+    from services.db_service import get_session as service_get_session
+
     # 署名検証をバイパスするための依存関係オーバーライド
     async def mock_verify():
         return None
 
     # テスト用セッションと署名検証バイパスを設定
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[service_get_session] = MagicMock(return_value=mock_session)
     app.dependency_overrides[verify_slack_signature] = mock_verify
 
     # テストクライアントを作成して返す
